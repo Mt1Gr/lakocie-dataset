@@ -16,3 +16,14 @@ def test_save_content():
         assert save_path == path
         with open(path) as file:
             assert file.read() == content
+
+
+def test_html_file_to_soup():
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        dir_save_path = tmpdirname
+        path = os.path.join(dir_save_path, FILENAME)
+        content = "<html><body>Example content</body></html>"
+        with open(path, "w") as file:
+            file.write(content)
+        soup: io.BeautifulSoup = io.html_file_to_soup(path)
+        assert soup.body.text == "Example content" if soup.body else False
