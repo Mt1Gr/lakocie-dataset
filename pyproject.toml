@@ -1,0 +1,25 @@
+[project]
+name = "lakocie-dataset"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Mateusz Gancarek", email = "mateusz.gancarek@outlook.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "beautifulsoup4>=4.13.3",
+    "requests>=2.32.3",
+]
+
+[project.scripts]
+lakocie-dataset = "lakocie_dataset:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
