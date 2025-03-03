@@ -12,10 +12,12 @@ def add_base_url_in_return(base_url: str):
         callable: A decorator function that wraps the original function.
 
     Example:
+        ```
         @add_base_url_in_return('https://example.com')
         def get_path():
             return '/api/data'
         # Returns: 'https://example.com/api/data'
+        ```
 
     Note:
         - If the decorated function returns None, the decorator will also return None.
