@@ -5,9 +5,9 @@ Scrapping functions for Kocie Figle web shop
 from enum import Enum
 from typing import Any
 from bs4 import BeautifulSoup, ResultSet
-from . import string_utils
+from . import string_utils, stores
 
-BASE_URL = "https://kociefigle.pl/"
+BASE_URL = stores.StoreChoice.KF.value.base_url
 
 
 class HtmlElement(Enum):
