@@ -56,6 +56,8 @@ def get_products_dir(
     """
     date_dir = config.get_htmls_dir() / store.value.name / date
     products_dir = date_dir / "products"
+    if not products_dir.exists():
+        raise FileNotFoundError(f"Products directory not found for {store} on {date}")
     return products_dir
 
 
@@ -67,4 +69,8 @@ def get_collections_dir(
     """
     date_dir = config.get_htmls_dir() / store.value.name / date
     collections_dir = date_dir / "collections"
+    if not collections_dir.exists():
+        raise FileNotFoundError(
+            f"Collections directory not found for {store} on {date}"
+        )
     return collections_dir

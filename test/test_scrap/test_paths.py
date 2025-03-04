@@ -3,6 +3,7 @@ from lakocie_dataset.scrap import paths
 from datetime import datetime
 from lakocie_dataset.scrap.stores import StoreChoice
 from lakocie_dataset.config import Config
+import pytest
 
 test_config = None
 TEST_CONFIG_PATH = Path(__file__).parent.parent / "test-config.yaml"
@@ -80,6 +81,19 @@ def test_get_products_dir():
                 raise NotImplementedError(f"Products not supported for store {store}")
 
     for store in stores:
+        match store:
+            case StoreChoice.KF:
+                with pytest.raises(FileNotFoundError):
+                    products_dir = paths.get_products_dir(  # type: ignore
+                        store,
+                        date="2020-20-20",
+                        config=test_config,  # type: ignore
+                    )
+                    assert products_dir.exists() is False
+            case _:
+                raise NotImplementedError(f"Products not supported for store {store}")
+
+    for store in stores:
         paths.create_products_dir(store, date="2021-01-01", config=test_config)  # type: ignore
 
     for store in stores:
@@ -103,6 +117,21 @@ def test_get_collections_dir():
             case StoreChoice.KF:
                 collections_dir = paths.get_collections_dir(store, config=test_config)  # type: ignore
                 assert collections_dir.exists()
+            case _:
+                raise NotImplementedError(
+                    f"Collections not supported for store {store}"
+                )
+
+    for store in stores:
+        match store:
+            case StoreChoice.KF:
+                with pytest.raises(FileNotFoundError):
+                    collections_dir = paths.get_collections_dir(  # type: ignore
+                        store,
+                        date="2020-20-20",
+                        config=test_config,  # type: ignore
+                    )
+                    assert collections_dir.exists() is False
             case _:
                 raise NotImplementedError(
                     f"Collections not supported for store {store}"
