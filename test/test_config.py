@@ -63,7 +63,7 @@ def test_get_htmls(tmp_path):
 
     config = Config(config_file)
 
-    assert config.get_htmls() == tmp_path / "html_directory"
+    assert config.get_htmls_dir() == tmp_path / "html_directory"
 
 
 def test_invalid_config_file():
