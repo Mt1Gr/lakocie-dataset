@@ -1,7 +1,7 @@
 from lakocie_dataset.scrap import fetch, permissions
 from enum import Enum
-from lakocie_dataset.scrap import kf
-from lakocie_dataset.scrap.kf import BASE_URL, ProductParameterChoice
+from lakocie_dataset.scrap.stores import kf
+from lakocie_dataset.scrap.stores.kf import BASE_URL, ProductParameterChoice
 from bs4 import BeautifulSoup
 
 

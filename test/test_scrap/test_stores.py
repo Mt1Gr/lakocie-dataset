@@ -1,19 +1,19 @@
-from lakocie_dataset.scrap import stores
+from lakocie_dataset.scrap.stores import store_definitions
 
 
 def test_store_choice():
-    assert len(stores.StoreChoice) == 1
+    assert len(store_definitions.StoreChoice) == 1
 
-    assert stores.StoreChoice.KF.value.name == "Kocie Figle"
-    assert stores.StoreChoice.KF.value.base_url == "https://kociefigle.pl/"
+    assert store_definitions.StoreChoice.KF.value.name == "Kocie Figle"
+    assert store_definitions.StoreChoice.KF.value.base_url == "https://kociefigle.pl/"
     assert (
-        stores.StoreChoice.KF.value.scrap_start_url
+        store_definitions.StoreChoice.KF.value.scrap_start_url
         == "https://kociefigle.pl/Karmy-Mokre"
     )
 
 
 def test_base_store():
-    test_store = stores.BaseStore(
+    test_store = store_definitions.BaseStore(
         name="Test Store",
         base_url="https://teststore.com/",
         scrap_start_url="https://teststore.com/products",

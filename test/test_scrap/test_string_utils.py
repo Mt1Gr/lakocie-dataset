@@ -1,4 +1,4 @@
-from lakocie_dataset.scrap import string_utils
+from lakocie_dataset.scrap.stores import string_utils
 
 
 def test_add_base_url_in_return():
