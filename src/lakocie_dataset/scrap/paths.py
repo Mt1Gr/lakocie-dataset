@@ -1,7 +1,6 @@
 from pathlib import Path
-import os
 from datetime import datetime
-from .stores import StoreChoice
+from .stores.store_definitions import StoreChoice
 from ..config import config
 
 
@@ -74,3 +73,29 @@ def get_collections_dir(
             f"Collections directory not found for {store} on {date}"
         )
     return collections_dir
+
+
+def get_latest_products_dir(store: StoreChoice, config=config) -> Path:
+    """
+    Returns the path to the latest products directory for a given store
+    """
+    store_dir = config.get_htmls_dir() / store.value.name
+    date_dirs = sorted(store_dir.glob("*"), reverse=True)
+    for date_dir in date_dirs:
+        products_dir = date_dir / "products"
+        if products_dir.exists():
+            return products_dir
+    raise FileNotFoundError(f"Products directory not found for {store}")
+
+
+def get_latest_collections_dir(store: StoreChoice, config=config) -> Path:
+    """
+    Returns the path to the latest collections directory for a given store
+    """
+    store_dir = config.get_htmls_dir() / store.value.name
+    date_dirs = sorted(store_dir.glob("*"), reverse=True)
+    for date_dir in date_dirs:
+        collections_dir = date_dir / "collections"
+        if collections_dir.exists():
+            return collections_dir
+    raise FileNotFoundError(f"Collections directory not found for {store}")

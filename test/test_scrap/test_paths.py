@@ -1,7 +1,7 @@
 from pathlib import Path
 from lakocie_dataset.scrap import paths
 from datetime import datetime
-from lakocie_dataset.scrap.stores import StoreChoice
+from lakocie_dataset.scrap.stores.store_definitions import StoreChoice
 from lakocie_dataset.config import Config
 import pytest
 
@@ -149,6 +149,41 @@ def test_get_collections_dir():
                     config=test_config,  # type: ignore
                 )
                 assert collections_dir.exists()
+            case _:
+                raise NotImplementedError(
+                    f"Collections not supported for store {store}"
+                )
+
+
+def test_get_latest_products_dir():
+    global test_config
+    stores = list(StoreChoice)
+    for store in stores:
+        match store:
+            case StoreChoice.KF:
+                today_prod_dir = paths.create_products_dir(store, config=test_config)  # type: ignore
+
+                products_dir = paths.get_latest_products_dir(store, config=test_config)  # type: ignore
+                assert products_dir.exists()
+                assert products_dir == today_prod_dir
+            case _:
+                raise NotImplementedError(f"Products not supported for store {store}")
+
+
+def test_get_latest_collections_dir():
+    global test_config
+    stores = list(StoreChoice)
+    for store in stores:
+        match store:
+            case StoreChoice.KF:
+                today_coll_dir = paths.create_collections_dir(store, config=test_config)  # type: ignore
+
+                collections_dir = paths.get_latest_collections_dir(
+                    store,
+                    config=test_config,  # type: ignore
+                )
+                assert collections_dir.exists()
+                assert collections_dir == today_coll_dir
             case _:
                 raise NotImplementedError(
                     f"Collections not supported for store {store}"
