@@ -1,5 +1,5 @@
 import requests
-from . import io
+from . import io, paths
 
 
 def get_content(url: str) -> str:
@@ -9,7 +9,7 @@ def get_content(url: str) -> str:
     return response.text
 
 
-def save_html(url: str, dir_save_path: str, filename: str) -> str:
-    """Save HTML content from a URL to a file. Return path to the file. `.html` extension **must** be specified in filename."""
+def save_html(url: str, path: paths.Path) -> paths.Path:
+    """Save HTML content from a URL to a file. Return path to the file."""
     content = get_content(url)
-    return io.save_content(content, filename, dir_save_path)
+    return io.save_content(content, path)
