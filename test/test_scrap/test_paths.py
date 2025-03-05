@@ -17,7 +17,7 @@ def setup_module(module):
             file.write(
                 """
 paths:
-  htmls: test-data/htmls
+  htmls_dir: test-data/htmls
 """
             )
     test_config = Config(TEST_CONFIG_PATH)

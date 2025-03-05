@@ -1,2 +1,5 @@
 paths:
   htmls_dir: data/htmls
+
+downloading:
+  sleep_time: 3

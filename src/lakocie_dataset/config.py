@@ -29,6 +29,7 @@ class Config:
             self.config = yaml.safe_load(file)
         self._resolve_paths()
         self._create_structure()
+        self._set_sleep_time()
 
     def _resolve_paths(self, paths_key: str = "paths"):
         paths = self.config.get(paths_key, {})
@@ -47,10 +48,16 @@ class Config:
         """
         Returns the path to the htmls directory
         """
-        return self.config["paths"]["htmls"]
+        return self.config["paths"]["htmls_dir"]
+
+    def _set_sleep_time(self):
+        self.sleep_time = self.config.get("downloading", {}).get("sleep_time", 2)
+
+    def get_sleep_time(self):
+        return self.sleep_time
 
 
 config = Config(Path(__file__).parent.parent.parent / "config.yaml")
 
 # debugging
-print(config.config)
+print(config.get_sleep_time())

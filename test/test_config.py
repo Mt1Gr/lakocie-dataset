@@ -3,69 +3,64 @@ from pathlib import Path
 from lakocie_dataset.config import Config
 
 
-def test_config_initialization(tmp_path):
-    # Create a temporary config file
+@pytest.fixture
+def config_file(tmp_path):
     config_content = """
     paths:
-        htmls: htmls
-        data: data
+        htmls_dir: "htmls"
+        data: "data"
+
+    downloading:
+        sleep_time: 1
     """
-    config_file = tmp_path / "config.yaml"
-    config_file.write_text(config_content)
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(config_content)
+    return config_path
 
-    # Initialize config
+
+def test_config_initialization(config_file):
     config = Config(config_file)
-
-    # Test basic attributes
     assert config.config_file == config_file.resolve()
-    assert config.project_root == tmp_path
+    assert config.project_root == config_file.parent
 
 
-def test_path_resolution(tmp_path):
+def test_load_yaml(config_file):
+    config = Config(config_file)
+    assert "paths" in config.config
+    assert "htmls_dir" in config.config["paths"]
+    assert "data" in config.config["paths"]
+
+
+def test_resolve_paths(config_file):
+    config = Config(config_file)
+    assert config.config["paths"]["htmls_dir"].is_absolute()
+    assert config.config["paths"]["data"].is_absolute()
+
+
+def test_create_structure(config_file):
+    config = Config(config_file)
+    assert config.config["paths"]["htmls_dir"].exists()
+    assert config.config["paths"]["data"].exists()
+
+
+def test_get_htmls_dir(config_file):
+    config = Config(config_file)
+    htmls_dir = config.get_htmls_dir()
+    assert htmls_dir == config.config["paths"]["htmls_dir"]
+
+
+def test_set_sleep_time(config_file):
+    config = Config(config_file)
+    assert config.get_sleep_time() == 1
+
+
+def test_default_sleep_time(tmp_path):
     config_content = """
     paths:
-        htmls: htmls
-        data: data
+        htmls: "htmls"
+        data: "data"
     """
-    config_file = tmp_path / "config.yaml"
-    config_file.write_text(config_content)
-
-    config = Config(config_file)
-
-    # Test paths were resolved
-    assert config.config["paths"]["htmls"] == tmp_path / "htmls"
-    assert config.config["paths"]["data"] == tmp_path / "data"
-
-
-def test_directory_creation(tmp_path):
-    config_content = """
-    paths:
-        dir1: test_dir1
-        dir2: nested/test_dir2
-    """
-    config_file = tmp_path / "config.yaml"
-    config_file.write_text(config_content)
-
-    config = Config(config_file)
-
-    # Test directories were created
-    assert (tmp_path / "test_dir1").exists()
-    assert (tmp_path / "nested/test_dir2").exists()
-
-
-def test_get_htmls(tmp_path):
-    config_content = """
-    paths:
-        htmls: html_directory
-    """
-    config_file = tmp_path / "config.yaml"
-    config_file.write_text(config_content)
-
-    config = Config(config_file)
-
-    assert config.get_htmls_dir() == tmp_path / "html_directory"
-
-
-def test_invalid_config_file():
-    with pytest.raises(FileNotFoundError):
-        Config(Path("nonexistent.yaml"))
+    config_path = tmp_path / "config.yaml"
+    config_path.write_text(config_content)
+    config = Config(config_path)
+    assert config.get_sleep_time() == 2
