@@ -1,3 +1,24 @@
+from urllib.parse import urlparse
+from .store_definitions import StoreChoice
+
+
+def product_name_from_url(url: str, store_choice: StoreChoice):
+    """Extract the product name from a URL based on the store choice."""
+    match store_choice:
+        case StoreChoice.KF:
+            # Parse the URL, e.g., 'https://example.com/products/item123'
+            parsed_url = urlparse(url)
+            # Get the path of the URL, e.g., '/products/item123'
+            path = parsed_url.path
+            # Split the path by '/', e.g., ['', 'products', 'item123']
+            path_split = path.split("/")
+            # Get the last element of the split path, e.g., 'item123'
+            product_name = path_split[-1]
+            return product_name
+        case _:
+            raise ValueError(f"Unsupported store choice: {store_choice}")
+
+
 def add_base_url_in_return(base_url: str):
     """A decorator that adds a base URL to the return value of a function.
 
