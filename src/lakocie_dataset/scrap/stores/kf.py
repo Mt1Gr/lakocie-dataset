@@ -56,10 +56,10 @@ class ProductParameterChoice(Enum):
     """
 
     PACKAGING_SIZE = "rozmiar opakowania"
-    FLAVOR = "smak"
+    FLAVOUR = "smak"
     FOOD_TYPE = "typ karmy"
     CAT_AGE = "wiek kota"
-    ALL = [PACKAGING_SIZE, FLAVOR, FOOD_TYPE, CAT_AGE]
+    ALL = [PACKAGING_SIZE, FLAVOUR, FOOD_TYPE, CAT_AGE]
 
 
 def select(choice: HtmlElement):

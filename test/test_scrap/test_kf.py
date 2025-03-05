@@ -4,6 +4,8 @@ from lakocie_dataset.scrap.stores import kf
 from lakocie_dataset.scrap.stores.kf import BASE_URL, ProductParameterChoice
 from bs4 import BeautifulSoup
 
+from lakocie_dataset.scrap import scrapper
+
 
 class KFPages(Enum):
     PAGINATION_PAGE = "https://kociefigle.pl/Karmy-Mokre/pa/4"
@@ -128,7 +130,7 @@ def test_get_product_weight():
 
 def test_get_product_flavor():
     assert (
-        kf.get_product_parameters(product_page_soup, ProductParameterChoice.FLAVOR)
+        kf.get_product_parameters(product_page_soup, ProductParameterChoice.FLAVOUR)
         == CorrectTestData.PROD_PARAMETERS.value["smak"]
         if product_page_soup
         else None
@@ -222,3 +224,33 @@ def test_get_product_links():
     assert (
         len(links) == CorrectTestData.COLL_LEN_PRODUCT_LINKS.value if links else False
     )
+
+
+def test_kfscrapper():
+    kfscrapper = scrapper.KFScrapper(product_page_soup)  # type: ignore
+    assert kfscrapper.get_product_name() == CorrectTestData.PROD_NAME.value
+    assert kfscrapper.get_product_price() == CorrectTestData.PROD_PRICE.value
+    assert kfscrapper.get_product_size() == CorrectTestData.PROD_WEIGHT.value
+    assert kfscrapper.get_product_flavour() == CorrectTestData.PROD_FLAVOUR.value
+    assert kfscrapper.get_product_type() == CorrectTestData.PROD_TYPE.value
+    assert kfscrapper.get_product_age_group() == CorrectTestData.PROD_CAT_AGE.value
+    assert kfscrapper.get_product_ean_code() == int(CorrectTestData.PROD_EAN_CODE.value)
+    assert (
+        CorrectTestData.PROD_SOME_COMP_TEXT.value
+        in kfscrapper.get_product_composition()
+    )  # type: ignore
+    assert (
+        CorrectTestData.PROD_SOME_ANALYTIC_TEXT.value
+        in kfscrapper.get_product_analytical_composition()
+    )  # type: ignore
+    assert (
+        CorrectTestData.PROD_SOME_DIET_SUPP_TEXT.value
+        in kfscrapper.get_product_dietary_supplements()
+    )  # type: ignore
+
+    kfscrapper.change_soup(pagination_page_soup)  # type: ignore
+    assert kfscrapper.get_next_page_link() == CorrectTestData.COLL_NEXT_PAGE_LINK.value
+    assert (
+        len(kfscrapper.get_product_links())
+        == CorrectTestData.COLL_LEN_PRODUCT_LINKS.value
+    )  # type: ignore
