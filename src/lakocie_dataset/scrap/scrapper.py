@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from bs4 import BeautifulSoup
-from .stores import kf
+from .stores import kf, store_definitions
 
 
 class Scrapper(ABC):
@@ -159,3 +159,13 @@ class KFScrapper(Scrapper):
     def get_product_links(self) -> list[str]:
         product_links = kf.get_product_links(self.soup)
         return product_links if product_links else []
+
+
+def get_scrapper(
+    store_choice: store_definitions.StoreChoice, soup: BeautifulSoup
+) -> KFScrapper:
+    match store_choice:
+        case store_definitions.StoreChoice.KF:
+            return KFScrapper(soup)
+        case _:
+            raise ValueError("Store not supported")
