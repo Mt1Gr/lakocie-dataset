@@ -27,28 +27,25 @@ class Config:
     def _load_yaml(self):
         with open(self.config_file, "r") as file:
             self.config = yaml.safe_load(file)
-        self._resolve_paths()
+        self._set_htmls_dir()
         self._create_structure()
         self._set_sleep_time()
+        self._set_database_path()
 
-    def _resolve_paths(self, paths_key: str = "paths"):
-        paths = self.config.get(paths_key, {})
-        for key, value in paths.items():
-            abs_check = Path(value).is_absolute()
-            if not abs_check:
-                self.config[paths_key][key] = Path(self.project_root / value)
-            else:
-                self.config[paths_key][key] = Path(value)
+    def _set_htmls_dir(self, paths_key: str = "paths"):
+        htmls_dir = Path(self.config.get(paths_key, {}).get("htmls_dir", "data/htmls"))
+        if not htmls_dir.is_absolute():
+            htmls_dir = self.project_root / htmls_dir
+        self.htmls_dir = htmls_dir
 
     def _create_structure(self):
-        for path in self.config["paths"].values():
-            path.mkdir(parents=True, exist_ok=True)
+        self.htmls_dir.mkdir(parents=True, exist_ok=True)
 
     def get_htmls_dir(self):
         """
         Returns the path to the htmls directory
         """
-        return self.config["paths"]["htmls_dir"]
+        return self.htmls_dir
 
     def _set_sleep_time(self):
         self.sleep_time = self.config.get("downloading", {}).get("sleep_time", 2)
@@ -56,8 +53,17 @@ class Config:
     def get_sleep_time(self):
         return self.sleep_time
 
+    def _set_database_path(self):
+        db_path = Path(self.config.get("paths", {}).get("database", "data/database.db"))
+        if not db_path.is_absolute():
+            db_path = self.project_root / db_path
+        self.database_path = db_path
+
+    def get_database_path(self):
+        return self.database_path
+
 
 config = Config(Path(__file__).parent.parent.parent / "config.yaml")
 
 # debugging
-print(config.get_sleep_time())
+print(config.get_database_path())

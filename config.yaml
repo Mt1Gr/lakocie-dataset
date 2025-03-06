@@ -1,5 +1,6 @@
 paths:
   htmls_dir: data/htmls
+  database: data/database.db
 
 downloading:
   sleep_time: 3

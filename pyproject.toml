@@ -8,9 +8,11 @@ authors = [
 ]
 requires-python = ">=3.13"
 dependencies = [
+    "alembic>=1.15.1",
     "beautifulsoup4>=4.13.3",
     "pyyaml>=6.0.2",
     "requests>=2.32.3",
+    "sqlmodel>=0.0.23",
 ]
 
 [project.scripts]
