@@ -64,6 +64,3 @@ class Config:
 
 
 config = Config(Path(__file__).parent.parent.parent / "config.yaml")
-
-# debugging
-print(config.get_database_path())
