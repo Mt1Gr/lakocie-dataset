@@ -45,6 +45,7 @@ class Store(SQLModel, table=True):
     website: str | None = Field(default=None, description="url")
 
     prices: list["Price"] = Relationship(back_populates="store")
+    data_scraps: list["ScrapData"] = Relationship(back_populates="store")
 
 
 class ScrapData(SQLModel, table=True):
@@ -79,6 +80,8 @@ class ScrapData(SQLModel, table=True):
     dietary_components: list["DietaryComponent"] = Relationship(
         back_populates="data_scrap"
     )
+    store_id: uuid.UUID | None = Field(default=None, foreign_key="store.id")
+    store: "Store" = Relationship(back_populates="data_scraps")
 
 
 class AnalyticalComponent(SQLModel, table=True):
