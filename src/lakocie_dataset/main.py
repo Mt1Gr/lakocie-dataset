@@ -1,17 +1,8 @@
-from .scrap import downloader
-from .database import sessions, models
 from sqlmodel import Session
-
-# mode = ["download_files", "init_db"]
-mode = ["init_db"]
+from . import operations
+from .database import sessions, models
 
 
 def main():
-    if "download_files" in mode:
-        downloader.download_collection_files()
-        downloader.download_product_files()
-
-    if "init_db" in mode:
-        engine = sessions.create_db_and_tables()
-        with Session(engine) as session:
-            pass
+    # operations.download_latest_html_files() # todo
+    operations.save_scrapped_data_in_db()
