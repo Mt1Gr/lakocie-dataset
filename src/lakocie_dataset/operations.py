@@ -18,6 +18,7 @@ def save_scrap_data_in_db(
     store: models.Store,
     product: models.Product,
     manufacturer: models.Manufacturer,
+    date: datetime = datetime.now(),
 ):
     valid_scrap_data = crud.read_valid_scrap_data_by_product_and_store(
         engine, product, store
@@ -34,6 +35,10 @@ def save_scrap_data_in_db(
             valid_scrap_data.dietary_supplements == scrap_dietary_supplements,
         ]
         if all(conditions):
+            if valid_scrap_data.valid_from > date:
+                _ = crud.update_scrap_data(
+                    engine, valid_scrap_data, is_valid=True, valid_from=date
+                )
             return
         else:
             _ = crud.update_scrap_data(
@@ -51,21 +56,30 @@ def save_scrap_data_in_db(
         "analytical_composition": scrap_analytical_composition,
         "dietary_supplements": scrap_dietary_supplements,
         "store": store,
+        "date": date,
     }
 
     _ = crud.create_scrap_data(engine, **scrap_data_dict)
 
 
 def save_product_price_in_db(
-    scrapper_: scrapper.Scrapper, product_db: models.Product, store_db: models.Store
+    scrapper_: scrapper.Scrapper,
+    product_db: models.Product,
+    store_db: models.Store,
+    date: datetime,
 ):
+    same_price_in_db = crud.read_price_by_product_store_and_date(
+        engine, product_db, store_db, date
+    )
+    if same_price_in_db:
+        return
     price = scrapper_.get_product_price()
     if price == "not found":
         return
-    _ = crud.create_price(engine, price, product_db, store_db)
+    _ = crud.create_price(engine, price, product_db, store_db, date)
 
 
-def save_product_data_in_db(store_choice, prod_path: Path):
+def save_product_data_in_db(store_choice, prod_path: Path, date: datetime):
     try:
         soup = io.html_file_to_soup(prod_path)
         scrapper_ = scrapper.get_scrapper(store_choice, soup)
@@ -82,20 +96,31 @@ def save_product_data_in_db(store_choice, prod_path: Path):
             engine, int(scrapper_.get_product_ean_code()), manufacturer_db
         )
 
-        save_product_price_in_db(scrapper_, product_db, store_db)
-        save_scrap_data_in_db(scrapper_, store_db, product_db, manufacturer_db)
+        save_product_price_in_db(scrapper_, product_db, store_db, date)
+        save_scrap_data_in_db(scrapper_, store_db, product_db, manufacturer_db, date)
     except ValueError as e:
         print(f"An error occurred while saving {prod_path} in db: {e}")
         return
 
 
-def save_scrapped_data_in_db():
+# def
+
+
+def save_scrapped_data_in_db(products_download_date: str):
+    date: datetime
+    try:
+        date = datetime.strptime(products_download_date, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError(
+            f"Invalid date format for products_download_date: {products_download_date}. Expected format: YYYY-MM-DD"
+        )
+
     stores = list(store_definitions.StoreChoice)
     for store in stores:
-        products_dir = paths.get_products_dir(store, date="2025-03-06")  # todo
+        products_dir = paths.get_products_dir(store, date=products_download_date)
 
         for prod_path in products_dir.iterdir():
             if not prod_path.is_file():
                 continue
 
-            save_product_data_in_db(store, prod_path)
+            save_product_data_in_db(store, prod_path, date)

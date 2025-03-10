@@ -67,12 +67,33 @@ def get_or_create_product(
         return product
 
 
-def create_price(engine: Engine, value: float, product: Product, store: Store) -> Price:
+def create_price(
+    engine: Engine,
+    value: float,
+    product: Product,
+    store: Store,
+    date: datetime = datetime.now(),
+) -> Price:
     with Session(engine) as session:
-        price = Price(value=value, product_ean=product.ean, store_id=store.id)
+        price = Price(
+            value=value, product_ean=product.ean, store_id=store.id, date=date
+        )
         session.add(price)
         session.commit()
         session.refresh(price)
+        return price
+
+
+def read_price_by_product_store_and_date(
+    engine: Engine, product: Product, store: Store, date: datetime
+) -> Price | None:
+    with Session(engine) as session:
+        price = session.exec(
+            select(Price)
+            .where(Price.product_ean == product.ean)
+            .where(Price.store_id == store.id)
+            .where(Price.date == date)
+        ).first()
         return price
 
 
@@ -89,6 +110,7 @@ def create_scrap_data(
     analytical_composition: str | None,
     dietary_supplements: str | None,
     store: Store,
+    date: datetime = datetime.now(),
 ) -> ScrapData:
     with Session(engine) as session:
         scrap_data = ScrapData(
@@ -104,6 +126,7 @@ def create_scrap_data(
             analytical_composition=analytical_composition,
             dietary_supplements=dietary_supplements,
             store=store,
+            valid_from=date,
         )
         session.add(scrap_data)
         session.commit()
@@ -137,6 +160,7 @@ def update_scrap_data(
     composition: str | None = None,
     analytical_composition: str | None = None,
     dietary_supplements: str | None = None,
+    valid_from: datetime | None = None,
     valid_to: datetime | None = None,
     is_valid: bool | None = None,
     store: Store | None = None,
@@ -168,6 +192,8 @@ def update_scrap_data(
             db_scrap_data.analytical_composition = analytical_composition
         if dietary_supplements is not None:
             db_scrap_data.dietary_supplements = dietary_supplements
+        if valid_from is not None:
+            db_scrap_data.valid_from = valid_from
         if valid_to is not None:
             db_scrap_data.valid_to = valid_to
         if is_valid is not None:

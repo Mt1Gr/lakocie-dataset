@@ -5,4 +5,4 @@ from .database import sessions, models
 
 def main():
     # operations.download_latest_html_files() # todo
-    operations.save_scrapped_data_in_db()
+    operations.save_scrapped_data_in_db("2025-03-06")
