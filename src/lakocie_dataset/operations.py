@@ -47,7 +47,7 @@ def save_scrap_data_in_db(
     scrap_data_dict = {
         "product_name": scrapper_.get_product_name(),
         "manyfacturer": manufacturer,
-        "weight": scrapper_.get_product_size(),
+        "weight": scrapper_.get_product_weight(),
         "flavour": scrapper_.get_product_flavour(),
         "type": scrapper_.get_product_type(),
         "age_group": scrapper_.get_product_age_group(),

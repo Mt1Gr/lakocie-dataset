@@ -49,7 +49,7 @@ def test_KFScrapper_params():
     with pytest.raises(TypeError):
         kfscrapper.get_product_price(1)  # type: ignore
     with pytest.raises(TypeError):
-        kfscrapper.get_product_size(1)  # type: ignore
+        kfscrapper.get_product_weight(1)  # type: ignore
     with pytest.raises(TypeError):
         kfscrapper.get_product_flavour(1)  # type: ignore
     with pytest.raises(TypeError):

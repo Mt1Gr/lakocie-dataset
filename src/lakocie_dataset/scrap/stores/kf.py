@@ -48,18 +48,18 @@ class ProductParameterChoice(Enum):
     This enum defines different parameters that can be used to categorize and filter cat food products.
 
     Attributes:
-        PACKAGING_SIZE (str): Parameter for package size selection
+        PACKAGING_WEIGHT (str): Parameter for package weight selection
         FLAVOR (str): Parameter for flavor/taste selection
         FOOD_TYPE (str): Parameter for type of cat food selection
         CAT_AGE (str): Parameter for cat age group selection
         ALL (list): List containing all parameter choices
     """
 
-    PACKAGING_SIZE = "rozmiar opakowania"
+    PACKAGING_WEIGHT = "rozmiar opakowania"
     FLAVOUR = "smak"
     FOOD_TYPE = "typ karmy"
     CAT_AGE = "wiek kota"
-    ALL = [PACKAGING_SIZE, FLAVOUR, FOOD_TYPE, CAT_AGE]
+    ALL = [PACKAGING_WEIGHT, FLAVOUR, FOOD_TYPE, CAT_AGE]
 
 
 def select(choice: HtmlElement):
@@ -187,9 +187,9 @@ def get_product_parameters(
     return parameters
 
 
-def get_product_size(soup: BeautifulSoup) -> str | None:
+def get_product_weight(soup: BeautifulSoup) -> str | None:
     parameters = get_product_parameters(soup)
-    size = parameters.get(ProductParameterChoice.PACKAGING_SIZE.value, None)
+    size = parameters.get(ProductParameterChoice.PACKAGING_WEIGHT.value, None)
     if size is None:
         return None
     return str(size)

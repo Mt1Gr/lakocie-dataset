@@ -38,7 +38,7 @@ class Scrapper(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_product_size(self) -> str | int:
+    def get_product_weight(self) -> str | int:
         """Extract product size from self.soup: BeautifulSoup object."""
         raise NotImplementedError
 
@@ -109,8 +109,8 @@ class KFScrapper(Scrapper):
         price = kf.get_product_price(self.soup)
         return price if price else float("nan")
 
-    def get_product_size(self) -> int:
-        size = kf.get_product_size(self.soup)
+    def get_product_weight(self) -> int:
+        size = kf.get_product_weight(self.soup)
         if size is None:
             return -1
         if "x" in size:
