@@ -3,4 +3,13 @@ paths:
   database: data/database.db
 
 downloading:
-  sleep_time: 3
+  sleep_time: 4
+
+modes:
+  latest_info:
+    switch: False
+    save_to_db: False
+
+  save_history_info_to_db:
+    switch: True
+    date_choice: "2025-03-05" # "YYYY-MM-DD"
