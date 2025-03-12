@@ -48,18 +48,18 @@ class ProductParameterChoice(Enum):
     This enum defines different parameters that can be used to categorize and filter cat food products.
 
     Attributes:
-        PACKAGING_SIZE (str): Parameter for package size selection
+        PACKAGING_WEIGHT (str): Parameter for package weight selection
         FLAVOR (str): Parameter for flavor/taste selection
         FOOD_TYPE (str): Parameter for type of cat food selection
         CAT_AGE (str): Parameter for cat age group selection
         ALL (list): List containing all parameter choices
     """
 
-    PACKAGING_SIZE = "rozmiar opakowania"
+    PACKAGING_WEIGHT = "rozmiar opakowania"
     FLAVOUR = "smak"
     FOOD_TYPE = "typ karmy"
     CAT_AGE = "wiek kota"
-    ALL = [PACKAGING_SIZE, FLAVOUR, FOOD_TYPE, CAT_AGE]
+    ALL = [PACKAGING_WEIGHT, FLAVOUR, FOOD_TYPE, CAT_AGE]
 
 
 def select(choice: HtmlElement):
@@ -173,7 +173,7 @@ def get_product_price(soup: BeautifulSoup) -> float | None:
 def get_product_parameters(
     soup: BeautifulSoup | ResultSet[Any],
     par_choice: ProductParameterChoice = ProductParameterChoice.ALL,
-) -> dict[str, str | int] | str | int | None:
+) -> dict[str, str | int]:
     if type(soup) is BeautifulSoup:
         raise Exception("Expected ResultSet, got BeautifulSoup")
 
@@ -184,12 +184,39 @@ def get_product_parameters(
         # Extract parameter value
         value = row.find("span", class_="text-field").text.strip()  # type: ignore
         parameters[name.lower()] = value
+    return parameters
 
-    match par_choice:
-        case ProductParameterChoice.ALL:
-            return parameters
-        case _:
-            return parameters[par_choice.value]
+
+def get_product_weight(soup: BeautifulSoup) -> str | None:
+    parameters = get_product_parameters(soup)
+    size = parameters.get(ProductParameterChoice.PACKAGING_WEIGHT.value, None)
+    if size is None:
+        return None
+    return str(size)
+
+
+def get_product_flavour(soup: BeautifulSoup) -> str:
+    parameters = get_product_parameters(soup)
+    flavour = parameters.get(ProductParameterChoice.FLAVOUR.value, None)
+    if flavour is None:
+        return "not found"
+    return str(flavour)
+
+
+def get_product_age_group(soup: BeautifulSoup) -> str:
+    parameters = get_product_parameters(soup)
+    age_group = parameters.get(ProductParameterChoice.CAT_AGE.value, None)
+    if age_group is None:
+        return "not found"
+    return str(age_group)
+
+
+def get_product_type(soup: BeautifulSoup) -> str:
+    parameters = get_product_parameters(soup)
+    product_type = parameters.get(ProductParameterChoice.FOOD_TYPE.value, None)
+    if product_type is None:
+        return "not found"
+    return str(product_type)
 
 
 @select(HtmlElement.HIDDEN_TR)

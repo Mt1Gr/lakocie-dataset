@@ -3,22 +3,6 @@ from pathlib import Path
 
 
 class Config:
-    """Configuration class for managing project paths and settings.
-    This class handles loading configuration from a YAML file, resolving paths,
-    and creating necessary directory structures.
-    Args:
-        config_file (Path): Path to the YAML configuration file.
-    Attributes:
-        config_file (Path): Resolved path to the configuration file
-        project_root (Path): Parent directory of the config file
-        config (dict): Loaded configuration from YAML file
-    Methods:
-        _load_yaml(): Loads configuration from YAML file and sets up paths
-        _resolve_paths(paths_key='paths'): Resolves relative paths to absolute paths
-        _create_structure(): Creates directories defined in the config paths
-        get_htmls_dir(): Returns path to the htmls directory
-    """
-
     def __init__(self, config_file: Path):
         self.config_file = Path(config_file).resolve()
         self.project_root = self.config_file.parent
@@ -31,6 +15,7 @@ class Config:
         self._create_structure()
         self._set_sleep_time()
         self._set_database_path()
+        self._set_modes()
 
     def _set_htmls_dir(self, paths_key: str = "paths"):
         htmls_dir = Path(self.config.get(paths_key, {}).get("htmls_dir", "data/htmls"))
@@ -62,8 +47,41 @@ class Config:
     def get_database_path(self):
         return self.database_path
 
+    def _set_modes(self):
+        modes = self.config.get("modes", None)
+        if modes is None:
+            raise ValueError("No modes defined in the config file")
+        latest_info = modes.get("latest_info", {})
+
+        if not latest_info:
+            raise ValueError("No latest_info mode defined")
+
+        self.latest_info_mode = latest_info.get("switch", False)
+        self.save_to_db = latest_info.get("save_to_db", False)
+
+        save_history_info_to_db = modes.get("save_history_info_to_db", {})
+        if not save_history_info_to_db:
+            raise ValueError("No save_history_info_to_db mode defined")
+
+        self.save_history_info_to_db_mode = save_history_info_to_db.get("switch", False)
+        self.save_history_info_to_db_date_choice = save_history_info_to_db.get(
+            "date_choice", None
+        )
+
+    def get_latest_info_mode(self):
+        return self.latest_info_mode
+
+    def get_save_to_db(self):
+        return self.save_to_db
+
+    def get_save_history_info_to_db_mode(self):
+        return self.save_history_info_to_db_mode
+
+    def get_save_history_info_to_db_date_choice(self):
+        return self.save_history_info_to_db_date_choice
+
 
 config = Config(Path(__file__).parent.parent.parent / "config.yaml")
 
-# debugging
-print(config.get_database_path())
+print(config.get_save_history_info_to_db_mode())
+print(config.get_save_history_info_to_db_date_choice())

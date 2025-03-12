@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Any
 
 from bs4 import BeautifulSoup
 from .stores import kf, store_definitions
@@ -39,7 +38,7 @@ class Scrapper(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_product_size(self) -> str | int:
+    def get_product_weight(self) -> str | int:
         """Extract product size from self.soup: BeautifulSoup object."""
         raise NotImplementedError
 
@@ -102,37 +101,35 @@ class KFScrapper(Scrapper):
 
     def get_product_manufacturer(self) -> str:
         manufacturer = kf.get_product_manufacturer(self.soup)
+        if manufacturer:
+            manufacturer = manufacturer.lower().strip().capitalize()
         return manufacturer if manufacturer else "not found"
 
     def get_product_price(self) -> float:
         price = kf.get_product_price(self.soup)
         return price if price else float("nan")
 
-    def get_product_size(self) -> str | int:
-        size = kf.get_product_parameters(
-            self.soup, kf.ProductParameterChoice.PACKAGING_SIZE
-        )
-        if size and isinstance(size, str):
-            size = int(size) if size.isdigit() else size
-        return size if size else "not found"  # type: ignore
+    def get_product_weight(self) -> int:
+        size = kf.get_product_weight(self.soup)
+        if size is None:
+            return -1
+        if "x" in size:
+            return -1
+
+        size = size.replace("g", "")
+        return int(size) if size.isdigit() else -1
 
     def get_product_flavour(self) -> str:
-        flavour = kf.get_product_parameters(
-            self.soup, kf.ProductParameterChoice.FLAVOUR
-        )
-        return flavour if flavour else "not found"  # type: ignore
+        flavour = kf.get_product_flavour(self.soup)
+        return flavour
 
     def get_product_age_group(self) -> str:
-        age_group = kf.get_product_parameters(
-            self.soup, kf.ProductParameterChoice.CAT_AGE
-        )
-        return age_group if age_group else "not found"  # type: ignore
+        age_group = kf.get_product_age_group(self.soup)
+        return age_group
 
     def get_product_type(self) -> str:
-        product_type = kf.get_product_parameters(
-            self.soup, kf.ProductParameterChoice.FOOD_TYPE
-        )
-        return product_type if product_type else "not found"  # type: ignore
+        product_type = kf.get_product_type(self.soup)
+        return product_type
 
     def get_product_ean_code(self) -> str | int:
         ean_code = kf.get_product_ean_code(self.soup)

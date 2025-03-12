@@ -1,7 +1,15 @@
-from .database.db import init_db, engine
-from sqlmodel import Session
+from . import operations
+from .scrap.paths import get_today_date_string
+from .config import config
 
 
 def main():
-    init_db()
-    print("Database initialized")
+    if config.get_latest_info_mode():
+        operations.download_latest_html_files()
+        if config.get_save_to_db():
+            operations.save_scrapped_data_in_db(get_today_date_string())
+
+    if config.get_save_history_info_to_db_mode():
+        date = config.get_save_history_info_to_db_date_choice()
+        if date:
+            operations.save_scrapped_data_in_db(date)

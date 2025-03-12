@@ -119,9 +119,7 @@ def test_get_product_parameters():
 
 def test_get_product_weight():
     assert (
-        kf.get_product_parameters(
-            product_page_soup, ProductParameterChoice.PACKAGING_SIZE
-        )
+        kf.get_product_weight(product_page_soup)
         == CorrectTestData.PROD_PARAMETERS.value["rozmiar opakowania"]
         if product_page_soup
         else None
@@ -130,7 +128,7 @@ def test_get_product_weight():
 
 def test_get_product_flavor():
     assert (
-        kf.get_product_parameters(product_page_soup, ProductParameterChoice.FLAVOUR)
+        kf.get_product_flavour(product_page_soup)
         == CorrectTestData.PROD_PARAMETERS.value["smak"]
         if product_page_soup
         else None
@@ -139,7 +137,7 @@ def test_get_product_flavor():
 
 def test_get_product_type():
     assert (
-        kf.get_product_parameters(product_page_soup, ProductParameterChoice.FOOD_TYPE)
+        kf.get_product_type(product_page_soup)
         == CorrectTestData.PROD_PARAMETERS.value["typ karmy"]
         if product_page_soup
         else None
@@ -148,7 +146,7 @@ def test_get_product_type():
 
 def test_get_product_target_age():
     assert (
-        kf.get_product_parameters(product_page_soup, ProductParameterChoice.CAT_AGE)
+        kf.get_product_age_group(product_page_soup)
         == CorrectTestData.PROD_PARAMETERS.value["wiek kota"]
         if product_page_soup
         else None
@@ -230,7 +228,9 @@ def test_kfscrapper():
     kfscrapper = scrapper.KFScrapper(product_page_soup)  # type: ignore
     assert kfscrapper.get_product_name() == CorrectTestData.PROD_NAME.value
     assert kfscrapper.get_product_price() == CorrectTestData.PROD_PRICE.value
-    assert kfscrapper.get_product_size() == CorrectTestData.PROD_WEIGHT.value
+    assert kfscrapper.get_product_weight() == int(
+        CorrectTestData.PROD_WEIGHT.value.replace("g", "")
+    )
     assert kfscrapper.get_product_flavour() == CorrectTestData.PROD_FLAVOUR.value
     assert kfscrapper.get_product_type() == CorrectTestData.PROD_TYPE.value
     assert kfscrapper.get_product_age_group() == CorrectTestData.PROD_CAT_AGE.value

@@ -1,12 +1,9 @@
-import time
 from . import io, fetch, paths, permissions, scrapper
 from .stores import store_definitions, string_utils
-from ..config import config
 
 
 def download_collection_files():
     """Download all files that contain products links"""
-    sleep_time = config.get_sleep_time()
     stores = list(store_definitions.StoreChoice)
     for store in stores:
         try:
@@ -30,7 +27,6 @@ def download_collection_files():
                 if save_path.exists():
                     print(f"File {save_path} already exists")
                 else:
-                    time.sleep(sleep_time)
                     fetch.save_html(next_page_link, save_path)
                     print(f"downloaded file:\t{save_path}")
                 soup = io.html_file_to_soup(save_path)
@@ -43,7 +39,6 @@ def download_collection_files():
 
 def download_product_files():
     """Download all files that contain product information"""
-    sleep_time = config.get_sleep_time()
     stores = list(store_definitions.StoreChoice)
     for store in stores:
         if not permissions.webscrapping_allowed(store.value.base_url):
@@ -64,7 +59,6 @@ def download_product_files():
                     if save_path.exists():
                         print(f"File {save_path} already exists")
                     else:
-                        time.sleep(sleep_time)
                         fetch.save_html(link, save_path)
                         print(f"downloaded file:\t{save_path}")
             except Exception as e:
