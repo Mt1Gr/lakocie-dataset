@@ -12,7 +12,11 @@ modes:
 
   save_history_info_to_db:
     switch: False
-    date_choice: "2025-03-05" # "YYYY-MM-DD"
+    date_choice: "2025-03-12" # "YYYY-MM-DD"
 
   cohere_database:
     switch: True
+
+
+dev:
+  debug: False

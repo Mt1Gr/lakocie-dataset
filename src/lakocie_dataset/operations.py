@@ -6,6 +6,8 @@ from .database import sessions, models, crud
 
 
 def download_latest_html_files():
+    print("Download latest information:")
+
     downloader.download_collection_files()
     downloader.download_product_files()
 
@@ -111,13 +113,17 @@ def create_product_data_saver_with_register():
                 scrapper_, store_db, product_db, manufacturer_db, date
             )
         except ValueError as e:
-            print(f"An error occurred while saving {prod_path} in db: {e}")
+            print(
+                f"An error occurred while saving {prod_path} in db: {e}, \nskipping and proceeding to the next file"
+            )
             return
 
     return save_product_data
 
 
 def save_scrapped_data_in_db(products_download_date: str):
+    print("Save scrapped data in db:")
+
     date: datetime
     try:
         date = datetime.strptime(products_download_date, "%Y-%m-%d")
@@ -139,12 +145,15 @@ def save_scrapped_data_in_db(products_download_date: str):
 
 
 def cohere_database():
+    print("Cohere database:")
+
     all_valid_scrap_data = crud.read_all_valid_scrap_data(engine)
     products = crud.read_products(engine)
+    followed_products = filter(lambda p: p.is_followed, products)
     products_to_unfollow = []
 
     # identify wieght problems
-    for p in products:
+    for p in followed_products:
         scraps = [s for s in all_valid_scrap_data if s.ean == p.ean]
         if not scraps:
             products_to_unfollow.append(p)
@@ -159,11 +168,13 @@ def cohere_database():
         if "x" in kf_scraps[0].product_name.split("-")[-1]:
             products_to_unfollow.append(p)
 
-    # unfollow products
-    for p in products_to_unfollow:
-        _ = crud.update_product(engine, p, is_followed=False)
-    print("\nUnfollowed all products with weight problems:")
-    for p in products_to_unfollow:
-        print(
-            f"{p.ean}: {[scrap.product_name for scrap in all_valid_scrap_data if scrap.ean == p.ean]}"
-        )
+    if products_to_unfollow != []:
+        # unfollow products
+        for p in products_to_unfollow:
+            _ = crud.update_product(engine, p, is_followed=False)
+
+        print("Unfollowed all products with weight problems:")
+        for p in products_to_unfollow:
+            print(
+                f"{p.ean}: {[scrap.product_name for scrap in all_valid_scrap_data if scrap.ean == p.ean]}"
+            )

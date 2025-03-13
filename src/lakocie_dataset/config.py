@@ -16,6 +16,7 @@ class Config:
         self._set_sleep_time()
         self._set_database_path()
         self._set_modes()
+        self._set_dev()
 
     def _set_htmls_dir(self, paths_key: str = "paths"):
         htmls_dir = Path(self.config.get(paths_key, {}).get("htmls_dir", "data/htmls"))
@@ -71,6 +72,10 @@ class Config:
         coher_database = modes.get("cohere_database", {})
         self.cohere_database_mode = coher_database.get("switch", False)
 
+    def _set_dev(self):
+        dev_dict = self.config.get("dev", {})
+        self.debug = dev_dict.get("debug", True)
+
     def get_latest_info_mode(self):
         return self.latest_info_mode
 
@@ -86,9 +91,13 @@ class Config:
     def get_cohere_database_mode(self):
         return self.cohere_database_mode
 
+    def get_debug(self):
+        return self.debug
+
 
 config = Config(Path(__file__).parent.parent.parent / "config.yaml")
 
-# print(config.get_save_history_info_to_db_mode())
-# print(config.get_save_history_info_to_db_date_choice())
-print(config.get_cohere_database_mode())
+if config.get_debug():
+    # print(config.get_save_history_info_to_db_mode())
+    # print(config.get_save_history_info_to_db_date_choice())
+    print("cohere", config.get_cohere_database_mode())
