@@ -84,7 +84,7 @@ def save_product_data_in_db(store_choice, prod_path: Path, date: datetime):
         soup = io.html_file_to_soup(prod_path)
         scrapper_ = scrapper.get_scrapper(store_choice, soup)
 
-        store_db = crud.get_or_create_store(engine, store_choice.value.name)
+        store_db = crud.get_or_create_store_by_name(engine, store_choice.value.name)
         manufacturer_db = crud.get_or_create_manufacturer(
             engine, scrapper_.get_product_manufacturer()
         )
@@ -101,9 +101,6 @@ def save_product_data_in_db(store_choice, prod_path: Path, date: datetime):
     except ValueError as e:
         print(f"An error occurred while saving {prod_path} in db: {e}")
         return
-
-
-# def
 
 
 def save_scrapped_data_in_db(products_download_date: str):
@@ -124,3 +121,34 @@ def save_scrapped_data_in_db(products_download_date: str):
                 continue
 
             save_product_data_in_db(store, prod_path, date)
+
+
+def cohere_database():
+    all_valid_scrap_data = crud.read_all_valid_scrap_data(engine)
+    products = crud.read_products(engine)
+    products_to_unfollow = []
+
+    # identify wieght problems
+    for p in products:
+        scraps = [s for s in all_valid_scrap_data if s.ean == p.ean]
+        if not scraps:
+            products_to_unfollow.append(p)
+
+        if all([s.weight == -1 for s in scraps]):
+            products_to_unfollow.append(p)
+
+        kf_store = crud.get_or_create_store_by_name(
+            engine, store_definitions.StoreChoice.KF.value.name
+        )
+        kf_scraps = [s for s in scraps if s.store_id == kf_store.id]
+        if "x" in kf_scraps[0].product_name.split("-")[-1]:
+            products_to_unfollow.append(p)
+
+    # unfollow products
+    for p in products_to_unfollow:
+        _ = crud.update_product(engine, p, is_followed=False)
+    print("\nUnfollowed all products with weight problems:")
+    for p in products_to_unfollow:
+        print(
+            f"{p.ean}: {[scrap.product_name for scrap in all_valid_scrap_data if scrap.ean == p.ean]}"
+        )

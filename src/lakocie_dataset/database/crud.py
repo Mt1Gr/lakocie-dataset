@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Sequence
 from sqlmodel import Session, select
 from sqlalchemy import Engine
 from .models import (
@@ -21,12 +22,18 @@ def create_store(engine: Engine, name: str, website: str | None) -> Store:
         return store
 
 
-def get_or_create_store(engine: Engine, name: str) -> Store:
+def get_or_create_store_by_name(engine: Engine, name: str) -> Store:
     with Session(engine) as session:
         store = session.exec(select(Store).where(Store.name == name)).first()
         if store is None:
             store = create_store(engine, name, None)
         return store
+
+
+def read_stores(engine: Engine) -> Sequence[Store]:
+    with Session(engine) as session:
+        stores = session.exec(select(Store)).all()
+        return stores
 
 
 def create_manufacturer(engine: Engine, name: str, website: str | None) -> Manufacturer:
@@ -65,6 +72,36 @@ def get_or_create_product(
         if product is None:
             product = create_product(engine, ean, manufacturer)
         return product
+
+
+def read_products(engine: Engine) -> Sequence[Product]:
+    with Session(engine) as session:
+        products = session.exec(select(Product)).all()
+        return products
+
+
+def update_product(
+    engine: Engine,
+    product: Product,
+    ean: int | None = None,
+    manufacturer: Manufacturer | None = None,
+    is_followed: bool | None = None,
+) -> Product | None:
+    with Session(engine) as session:
+        db_product = session.get(Product, product.ean)
+        if not db_product:
+            return None
+
+        if ean is not None:
+            db_product.ean = ean
+        if manufacturer is not None:
+            db_product.manufacturer = manufacturer
+        if is_followed is not None:
+            db_product.is_followed = is_followed
+
+        session.commit()
+        session.refresh(db_product)
+        return db_product
 
 
 def create_price(
@@ -144,6 +181,14 @@ def read_valid_scrap_data_by_product_and_store(
             .where(ScrapData.ean == product.ean)
             .where(ScrapData.store_id == store.id)
         ).first()
+        return valid_scrap_data
+
+
+def read_all_valid_scrap_data(engine: Engine) -> Sequence[ScrapData]:
+    with Session(engine) as session:
+        valid_scrap_data = session.exec(
+            select(ScrapData).where(ScrapData.is_valid == True)
+        ).all()
         return valid_scrap_data
 
 

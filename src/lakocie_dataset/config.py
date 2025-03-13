@@ -68,6 +68,9 @@ class Config:
             "date_choice", None
         )
 
+        coher_database = modes.get("cohere_database", {})
+        self.cohere_database_mode = coher_database.get("switch", False)
+
     def get_latest_info_mode(self):
         return self.latest_info_mode
 
@@ -80,8 +83,12 @@ class Config:
     def get_save_history_info_to_db_date_choice(self):
         return self.save_history_info_to_db_date_choice
 
+    def get_cohere_database_mode(self):
+        return self.cohere_database_mode
+
 
 config = Config(Path(__file__).parent.parent.parent / "config.yaml")
 
-print(config.get_save_history_info_to_db_mode())
-print(config.get_save_history_info_to_db_date_choice())
+# print(config.get_save_history_info_to_db_mode())
+# print(config.get_save_history_info_to_db_date_choice())
+print(config.get_cohere_database_mode())

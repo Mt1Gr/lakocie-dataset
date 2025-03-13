@@ -3,7 +3,7 @@ paths:
   database: data/database.db
 
 downloading:
-  sleep_time: 4
+  sleep_time: 3
 
 modes:
   latest_info:
@@ -11,5 +11,8 @@ modes:
     save_to_db: False
 
   save_history_info_to_db:
-    switch: True
+    switch: False
     date_choice: "2025-03-05" # "YYYY-MM-DD"
+
+  cohere_database:
+    switch: True

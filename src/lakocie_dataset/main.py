@@ -13,3 +13,6 @@ def main():
         date = config.get_save_history_info_to_db_date_choice()
         if date:
             operations.save_scrapped_data_in_db(date)
+
+    if config.get_cohere_database_mode():
+        operations.cohere_database()
