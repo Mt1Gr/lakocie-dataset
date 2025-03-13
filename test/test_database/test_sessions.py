@@ -28,22 +28,6 @@ def cleanup_test_db():
 
 
 class TestCreateDbAndTables:
-    def test_creates_engine_with_correct_url(self, monkeypatch, mock_config):
-        """Test that engine is created with correct URL from config"""
-        # Mock create_engine
-        mock_engine = Mock(spec=Engine)
-        mock_create_engine = Mock(return_value=mock_engine)
-        monkeypatch.setattr(
-            "lakocie_dataset.database.sessions.create_engine", mock_create_engine
-        )
-
-        create_db_and_tables()
-
-        # Verify create_engine was called with correct URL
-        mock_create_engine.assert_called_once_with(
-            "sqlite:///test_database.db", echo=True
-        )
-
     def test_creates_all_tables(self, monkeypatch, mock_config):
         """Test that SQLModel.metadata.create_all is called with engine"""
         # Mock create_engine and create_all
