@@ -1,6 +1,6 @@
 # LaKocie Dataset Repository
 
-This repository is storing a tool/package that creates wet cat food **dataset** and a `ipynb` notebook containing in-depth analysis of dataset.
+This repository is storing a tool/package that creates wet cat food **dataset**.
 
 
 ## Installation and usage
