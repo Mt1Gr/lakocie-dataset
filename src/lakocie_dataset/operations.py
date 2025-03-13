@@ -79,28 +79,42 @@ def save_product_price_in_db(
     _ = crud.create_price(engine, price, product_db, store_db, date)
 
 
-def save_product_data_in_db(store_choice, prod_path: Path, date: datetime):
-    try:
-        soup = io.html_file_to_soup(prod_path)
-        scrapper_ = scrapper.get_scrapper(store_choice, soup)
+def create_product_data_saver_with_register():
+    # closure that handles scenerio of multiple data_scraps assign to one ean
+    ean_register = set()
 
-        store_db = crud.get_or_create_store_by_name(engine, store_choice.value.name)
-        manufacturer_db = crud.get_or_create_manufacturer(
-            engine, scrapper_.get_product_manufacturer()
-        )
+    def save_product_data(
+        store_choice: store_definitions.StoreChoice, prod_path: Path, date: datetime
+    ):
+        try:
+            soup = io.html_file_to_soup(prod_path)
+            scrapper_ = scrapper.get_scrapper(store_choice, soup)
 
-        ean = scrapper_.get_product_ean_code()
-        if ean == "not found":
+            store_db = crud.get_or_create_store_by_name(engine, store_choice.value.name)
+            manufacturer_db = crud.get_or_create_manufacturer(
+                engine, scrapper_.get_product_manufacturer()
+            )
+
+            ean = scrapper_.get_product_ean_code()
+            if ean == "not found":
+                return
+            if ean in ean_register:
+                return
+            ean_register.add(ean)
+
+            product_db = crud.get_or_create_product(
+                engine, int(scrapper_.get_product_ean_code()), manufacturer_db
+            )
+
+            save_product_price_in_db(scrapper_, product_db, store_db, date)
+            save_scrap_data_in_db(
+                scrapper_, store_db, product_db, manufacturer_db, date
+            )
+        except ValueError as e:
+            print(f"An error occurred while saving {prod_path} in db: {e}")
             return
-        product_db = crud.get_or_create_product(
-            engine, int(scrapper_.get_product_ean_code()), manufacturer_db
-        )
 
-        save_product_price_in_db(scrapper_, product_db, store_db, date)
-        save_scrap_data_in_db(scrapper_, store_db, product_db, manufacturer_db, date)
-    except ValueError as e:
-        print(f"An error occurred while saving {prod_path} in db: {e}")
-        return
+    return save_product_data
 
 
 def save_scrapped_data_in_db(products_download_date: str):
@@ -114,13 +128,14 @@ def save_scrapped_data_in_db(products_download_date: str):
 
     stores = list(store_definitions.StoreChoice)
     for store in stores:
+        data_saver = create_product_data_saver_with_register()
         products_dir = paths.get_products_dir(store, date=products_download_date)
 
         for prod_path in products_dir.iterdir():
             if not prod_path.is_file():
                 continue
 
-            save_product_data_in_db(store, prod_path, date)
+            data_saver(store, prod_path, date)
 
 
 def cohere_database():
