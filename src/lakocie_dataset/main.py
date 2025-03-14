@@ -16,3 +16,6 @@ def main():
 
     if config.get_cohere_database_mode():
         operations.cohere_database()
+
+    if config.get_gpt_extract_data_mode():
+        operations.gpt_extract_data()

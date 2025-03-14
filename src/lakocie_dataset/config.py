@@ -72,6 +72,9 @@ class Config:
         coher_database = modes.get("cohere_database", {})
         self.cohere_database_mode = coher_database.get("switch", False)
 
+        gpt_extract_data = modes.get("gpt_extract_data", {})
+        self.gpt_extract_data_mode = gpt_extract_data.get("switch", False)
+
     def _set_dev(self):
         dev_dict = self.config.get("dev", {})
         self.debug = dev_dict.get("debug", True)
@@ -91,6 +94,9 @@ class Config:
     def get_cohere_database_mode(self):
         return self.cohere_database_mode
 
+    def get_gpt_extract_data_mode(self):
+        return self.gpt_extract_data_mode
+
     def get_debug(self):
         return self.debug
 
@@ -101,3 +107,4 @@ if config.get_debug():
     # print(config.get_save_history_info_to_db_mode())
     # print(config.get_save_history_info_to_db_date_choice())
     print("cohere", config.get_cohere_database_mode())
+    print("gpt", config.get_gpt_extract_data_mode())

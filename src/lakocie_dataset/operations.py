@@ -1,8 +1,12 @@
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
+from sqlmodel import Session, select
+
 from .scrap import downloader, scrapper, paths, io
 from .scrap.stores import store_definitions
 from .database import sessions, models, crud
+from .openai_api import communication, output_models
 
 
 def download_latest_html_files():
@@ -178,3 +182,140 @@ def cohere_database():
             print(
                 f"{p.ean}: {[scrap.product_name for scrap in all_valid_scrap_data if scrap.ean == p.ean]}"
             )
+
+
+class ExtractionChoice(str, Enum):
+    ANALYTICAL_COMPONENTS = "składnikach analitycznych"
+    DIETARY_COMPONENTS = "dodatkach dietetycznych"
+
+
+def get_data_to_describe(extraction_choice: ExtractionChoice):
+    unique_data = set()
+    print("All products:\n\t\t\t\t", len(crud.read_products(engine)))
+    with Session(engine) as session:
+        followed_products = session.exec(
+            select(models.Product).where(models.Product.is_followed == True)
+        ).all()
+        print("All followed products:\n\t\t\t\t", len(followed_products))
+
+        count_data_to_describe = 0
+        for product in followed_products:
+            valid_data_scraps = []
+            match extraction_choice:
+                case ExtractionChoice.ANALYTICAL_COMPONENTS:
+                    valid_data_scraps = [
+                        ds
+                        for ds in product.data_scraps
+                        if ds.is_valid
+                        and ds.analytical_composition != "not found"
+                        and ds.analytical_components == []
+                    ]
+                case ExtractionChoice.DIETARY_COMPONENTS:
+                    valid_data_scraps = [
+                        ds
+                        for ds in product.data_scraps
+                        if ds.is_valid
+                        and ds.dietary_supplements != "not found"
+                        and ds.dietary_components == []
+                    ]
+            count_data_to_describe += len(valid_data_scraps)
+            for ds in valid_data_scraps:
+                match extraction_choice:
+                    case ExtractionChoice.ANALYTICAL_COMPONENTS:
+                        unique_data.add(ds.analytical_composition)
+                    case ExtractionChoice.DIETARY_COMPONENTS:
+                        unique_data.add(ds.dietary_supplements)
+
+        print("Data to describe left:\n\t\t\t\t", count_data_to_describe)
+        return unique_data
+
+
+def describe_data_and_save_in_db(text: str, extraction_choice: ExtractionChoice):
+    # find data scraps that match text
+    data_scraps = []
+    match extraction_choice:
+        case ExtractionChoice.ANALYTICAL_COMPONENTS:
+            data_scraps = crud.read_scrap_data_by_analytical_comosition(engine, text)
+        case ExtractionChoice.DIETARY_COMPONENTS:
+            data_scraps = crud.read_scrap_data_by_dietary_supplements(engine, text)
+    if data_scraps == []:
+        return
+
+    # get gpt response
+    gpt_response: (
+        output_models.AnalyticalComponents | output_models.DietaryComponents | None
+    ) = None
+    match extraction_choice:
+        case ExtractionChoice.ANALYTICAL_COMPONENTS:
+            gpt_response = communication.gpt_structured_output_reuqest(
+                text,
+                ExtractionChoice.ANALYTICAL_COMPONENTS.value,
+                output_models.AnalyticalComponents,
+            )
+        case ExtractionChoice.DIETARY_COMPONENTS:
+            gpt_response = communication.gpt_structured_output_reuqest(
+                text,
+                ExtractionChoice.DIETARY_COMPONENTS.value,
+                output_models.DietaryComponents,
+            )
+    if gpt_response is None:
+        return
+
+    # save data in db
+    match extraction_choice:
+        case ExtractionChoice.ANALYTICAL_COMPONENTS:
+            data = gpt_response.model_dump()["components"]
+            for component in data:
+                if component["type"] == output_models.AnalyticalComponentType.OTHER:
+                    for ds in data_scraps:
+                        crud.create_analytical_component(
+                            engine,
+                            component["value"],
+                            component["name"],
+                            ds,
+                        )
+                else:
+                    for ds in data_scraps:
+                        crud.create_analytical_component(
+                            engine,
+                            component["value"],
+                            component["type"].name.lower(),
+                            ds,
+                        )
+        case ExtractionChoice.DIETARY_COMPONENTS:
+            data = gpt_response.model_dump()["components"]
+            for component in data:
+                for ds in data_scraps:
+                    crud.create_dietary_component(
+                        engine,
+                        component["value"],
+                        component["unit"],
+                        component["name"],
+                        component["chemical_form"],
+                        ds,
+                    )
+
+    print(
+        f"\n\n{extraction_choice.name.lower()} described and saved in db:\n\t\t\t\t",
+        len(data_scraps),
+        "product names:",
+    )
+    for ds in data_scraps:
+        print(ds.product_name)
+
+
+def gpt_extract_data():
+    print("Gpt extract data:")
+    choices = list(ExtractionChoice)
+    for choice in choices:
+        unique_data_to_describe = get_data_to_describe(choice)
+        if unique_data_to_describe == set():
+            continue
+
+        print("Unique data to describe:\n\t\t\t\t", len(unique_data_to_describe))
+        for text in unique_data_to_describe:
+            if text == "not found":
+                continue
+            describe_data_and_save_in_db(text, choice)
+
+    print("All data described and saved in db")

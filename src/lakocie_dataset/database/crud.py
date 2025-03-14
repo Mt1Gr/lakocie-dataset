@@ -251,3 +251,74 @@ def update_scrap_data(
         session.commit()
         session.refresh(db_scrap_data)
         return db_scrap_data
+
+
+def read_scrap_data_by_analytical_comosition(
+    engine: Engine, analytical_composition: str
+) -> list[ScrapData]:
+    with Session(engine) as session:
+        scrap_data = session.exec(
+            select(ScrapData)
+            .where(
+                ScrapData.analytical_composition == analytical_composition,
+            )
+            .where(ScrapData.is_valid == True)
+        ).all()
+        return [
+            ds
+            for ds in scrap_data
+            if ds.analytical_components == [] and ds.is_valid and ds.product.is_followed
+        ]
+
+
+def read_scrap_data_by_dietary_supplements(
+    engine: Engine, dietary_supplements: str
+) -> list[ScrapData]:
+    with Session(engine) as session:
+        scrap_data = session.exec(
+            select(ScrapData)
+            .where(
+                ScrapData.dietary_supplements == dietary_supplements,
+            )
+            .where(ScrapData.is_valid == True)
+        ).all()
+        return [
+            ds
+            for ds in scrap_data
+            if ds.dietary_components == [] and ds.is_valid and ds.product.is_followed
+        ]
+
+
+def create_analytical_component(
+    engine: Engine, value: float, name: str, scrap_data: ScrapData
+) -> AnalyticalComponent:
+    with Session(engine) as session:
+        analytical_component = AnalyticalComponent(
+            value=value, name=name, data_scrap_id=scrap_data.id
+        )
+        session.add(analytical_component)
+        session.commit()
+        session.refresh(analytical_component)
+        return analytical_component
+
+
+def create_dietary_component(
+    engine: Engine,
+    value: float | None,
+    unit: str | None,
+    name: str,
+    chemical_form: str | None,
+    scrap_data: ScrapData,
+) -> DietaryComponent:
+    with Session(engine) as session:
+        dietary_component = DietaryComponent(
+            value=value,
+            unit=unit,
+            name=name,
+            chemical_form=chemical_form,
+            data_scrap_id=scrap_data.id,
+        )
+        session.add(dietary_component)
+        session.commit()
+        session.refresh(dietary_component)
+        return dietary_component

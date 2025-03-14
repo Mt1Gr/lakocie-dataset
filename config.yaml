@@ -15,6 +15,9 @@ modes:
     date_choice: "2025-03-12" # "YYYY-MM-DD"
 
   cohere_database:
+    switch: False
+
+  gpt_extract_data:
     switch: True
 
 
