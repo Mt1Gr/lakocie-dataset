@@ -1,5 +1,7 @@
+import os
 import yaml
 from pathlib import Path
+from dotenv import load_dotenv
 
 
 class Config:
@@ -7,6 +9,7 @@ class Config:
         self.config_file = Path(config_file).resolve()
         self.project_root = self.config_file.parent
         self._load_yaml()
+        load_dotenv()
 
     def _load_yaml(self):
         with open(self.config_file, "r") as file:
@@ -108,3 +111,4 @@ if config.get_debug():
     # print(config.get_save_history_info_to_db_date_choice())
     print("cohere", config.get_cohere_database_mode())
     print("gpt", config.get_gpt_extract_data_mode())
+    print(os.getenv("OPENAI_API_KEY"))

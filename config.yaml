@@ -18,8 +18,8 @@ modes:
     switch: False
 
   gpt_extract_data:
-    switch: True
+    switch: False
 
 
 dev:
-  debug: False
+  debug: True
