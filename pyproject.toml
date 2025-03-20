@@ -1,11 +1,9 @@
 [project]
 name = "lakocie-dataset"
 version = "0.1.0"
-description = "Add your description here"
+description = "A specialized web scraping and data processing tool "
 readme = "README.md"
-authors = [
-    { name = "Mateusz Gancarek", email = "mateusz.gancarek@outlook.com" },
-]
+authors = [{ name = "MtGr", email = "Mt-Gr@outlook.com" }]
 requires-python = ">=3.13"
 dependencies = [
     "beautifulsoup4>=4.13.3",
